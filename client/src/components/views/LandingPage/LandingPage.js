@@ -1,26 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import {API_KEY, API_URL, IMAGE_BASE_URL} from '../../Config';
 import MainImage from './Sections/MainImage'
-import GridCards from '../Commons/GridCards'
+import GridCards from '../commons/GridCards'
 import { Row } from 'antd';
 
 function LandingPage() {
 
     const [Movies, setMovies] = useState([]);
     const [MainMovieImage, setMainMovieImage] = useState(null);
-
+    const [CurrentPage, setCurrentPage] = useState(0);
 
     useEffect(() => {
         const endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=1`
-        
+        fetchMovies(endpoint);
+    }, [])
+    
+    const fetchMovies = (endpoint) => {
         fetch(endpoint)
         .then(response => response.json())
         .then(response => {
-            console.log(response.results);
-            setMovies(...[response.results]);
-            setMainMovieImage(response.results[0]);
+            console.log(response);
+            setMovies([...Movies, ...response.results])
+            setMainMovieImage(response.results[0])
+            setCurrentPage(response.page);
         })
-    }, [])
+    }
+
+    const loadMoreItems = () => {
+        const endpoint = `${API_URL}movie/popular?api_key=${API_KEY}&language=en-US&page=${CurrentPage + 1}`
+        fetchMovies(endpoint);
+    }
     
     return (
         <div style={{width: '100%', margin: '0'}}>
@@ -46,13 +55,12 @@ function LandingPage() {
                             />
                         </React.Fragment>
                     ))}
-                    <GridCards />
 
                 </Row>
             </div>
             
             <div style={{display: 'flex', justifyContent: 'center'}}>
-                <button>Load More</button>
+                <button onClick={loadMoreItems}>Load More</button>
             </div>
         </div>
     )
